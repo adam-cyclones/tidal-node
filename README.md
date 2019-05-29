@@ -1,8 +1,8 @@
 # Tidal Node
 
-Lua was concieved as an embeded language, designed to compliment other languages, a simple scripting language for compiled platforms. I can see this having a use for those needing performance and multithreading but in a way that isnt 100 miles away from JavaScript. Trust me Lua is so small and sort of firmilair you can be up and running in around an hour.
+Lua was concieved as an embeded language, designed to compliment other languages, Tidal brings Lua to node.js through WebAssembly and c++.
 
-This is a web assembly project, it's WIP and has not been tested on another machines yet, you will find most of the emscripten compiler commands in npm package.json "config". There is also a installer task for Lua built in.
+tidal node is WIP and has not been tested on another machines yet, you will find most of the emscripten compiler commands in npm package.json "config". There is also a installer task for Lua built in.
 
 ## Requirements
 #### compiler:
