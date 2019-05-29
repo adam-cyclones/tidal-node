@@ -13,19 +13,12 @@ node 10.0.0^
 - make
 - curl
 
-### Building
-1. `npm run install-lua`
-The task install-lua will go ahead and download a copy of lua 5.3.5 which is the latest stable.
-Compile with emscripten.
-Rewire the emscripten js gluecode.
-Run `index.js`
-
-#### Compile only
-To just compile use `npm run compile`.
-#### Run only
-To just run use `npm start`
-
----
+## Commands
+| command | purpose |
+| ------------- | ------------- |
+| npm start | just run the project |
+| npm run compile | just compile |
+| npm run install-lua | download a copy of lua 5.3.5 and build with emscripten |
 
 ## What is working
 - Return flat Lua tables to node!
@@ -35,7 +28,7 @@ To just run use `npm start`
 - Use module.exports and require like node.js
 - All lua files are modules by default and return a Lua table - Like node where all files return a JavaScript Object
 
-### Todo
+### Roadmap
 - Investigate calling Libuv from Lua, interop between JavaScript and Lua and IPC.
 - Create running examples, maybe a lua Webserver and a Game engine port.
 - Refactor cleanup optimize repeat
