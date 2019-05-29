@@ -28,8 +28,9 @@ To just run use `npm start`
 ## What is working
 - Return flat lua tables to node!
 
-### What isnt working.
+### Highlights.
 - returning strings and numbers (simple TODO)
+- Clone implimentation of node Module and require, feels like using node in Lua, but still Lua.
 
 ### Todo
 - Unit testing with Jest
@@ -38,6 +39,10 @@ To just run use `npm start`
 - Return dobules as number
 - Return nested tables
 - Returning functions ?!
+- Change from platform inrto library distributable format
+- Smarter build system
+- OS support - (developed on Mac Os)
+- Beanchmarking
 - Improve nodelike Lua require to search paths lua_modules
 - Integrate lua-rocks and wrap so that installs are more node like
 - Test and validate fresh installs and install scripts
