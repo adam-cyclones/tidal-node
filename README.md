@@ -28,7 +28,7 @@ To just run use `npm start`
 ## What is working
 - Return flat lua tables to node!
 
-### Highlights.
+### Highlights - "Its alive!"
 - returning strings and numbers (simple TODO)
 - Clone implimentation of node Module and require, feels like using node in Lua, but still Lua.
 
