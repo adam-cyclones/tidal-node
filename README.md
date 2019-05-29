@@ -1,6 +1,6 @@
 # Tidal Node
 
-Lua was concieved as an embeded language, designed to compliment other languages, Tidal brings Lua to node.js through WebAssembly and c++.
+Lua was concieved as an embeded language, designed to compliment other languages, Tidal Node is a library which brings Lua to node.js through WebAssembly and c++.
 
 tidal node is WIP and has not been tested on another machines yet, you will find most of the emscripten compiler commands in npm package.json "config". There is also a installer task for Lua built in.
 
