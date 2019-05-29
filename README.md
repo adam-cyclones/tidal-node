@@ -33,7 +33,7 @@ To just run use `npm start`
 - Return flat Lua tables to node!
 
 ### Highlights - "It's alive!"
-- Returning flat Lua tables to JavaScript as Objects
+- Returning flat Lua Tables to JavaScript as Objects
 - Use module.exports and require like node.js
 - All lua files are modules by default and return a Lua table - Like node where all files return a JavaScript Object
 
