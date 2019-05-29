@@ -1,6 +1,6 @@
 # wasm-lua-node-tidal
 
-Welcome to my experiment, you will find most of the emscripten compiler commands in npm package.json "config". There is also a installer task for lua built in.
+Welcome to my experiment, Its WIP and has not been tested on another machine yet, you will find most of the emscripten compiler commands in npm package.json "config". There is also a installer task for lua built in.
 
 ## Requirements
 #### compiler:
@@ -33,6 +33,7 @@ To just run use `npm start`
 - Clone implimentation of node Module and require, feels like using node in Lua, but still Lua.
 
 ### Todo
+- Refactor cleanup optimize repeat
 - Unit testing with Jest
 - Return strings
 - Return nil as null
