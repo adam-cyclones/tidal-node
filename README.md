@@ -29,8 +29,9 @@ To just run use `npm start`
 - Return flat lua tables to node!
 
 ### Highlights - "Its alive!"
-- returning strings and numbers (simple TODO)
-- Clone implimentation of node Module and require, feels like using node in Lua, but still Lua.
+- returning flat Lua tables to JavaScript as Objects
+- Use module.exports and require like node.js
+- All lua files are modules by default and return a Lua table - Like node where all files return a JavaScript Object
 
 ### Todo
 - Refactor cleanup optimize repeat
@@ -40,6 +41,8 @@ To just run use `npm start`
 - Return dobules as number
 - Return nested tables
 - Returning functions ?!
+- Feature toggles (how much magic do you want?)
+- Proxy node require to safely load Lua in the same way we load JavaScript, (feature toggle)
 - Change from platform inrto library distributable format
 - Smarter build system
 - OS support - (developed on Mac Os)
