@@ -2,7 +2,7 @@
 
 Welcome to my experiment, you will find most of the emscripten compiler commands in npm package.json "config". There is also a installer task for lua built in.
 
-### Requirements
+## Requirements
 #### compiler:
 emscripten 1.38.30^
 #### runtime:
@@ -23,15 +23,26 @@ To just compile use `npm run compile`.
 #### run only
 To just run use `npm start`
 
+---
+
+## What is working
+- Return flat lua tables to node!
+
 ### What isnt working.
 - returning strings and numbers (simple TODO)
 
-### To do
-- Return lua tables to node!
-- Returning strings
-- Returning complex data
-- Returning functions
-- Functions from Lua
-- Tables from Lua to JavaScript objects
+### Todo
+- Unit testing with Jest
+- Return strings
+- Return nil as null
+- Return dobules as number
+- Return nested tables
+- Returning functions ?!
+- Improve nodelike Lua require to search paths lua_modules
+- Integrate lua-rocks and wrap so that installs are more node like
+- Test and validate fresh installs and install scripts
+- Reduce and remove c++ dependencies where posible
+- General repo management
+- Create branding, website docs and RC.alpha-1
 
 [Inspiration | https://github.com/vvanders/wasm_lua] by the fantastic @vvanders
