@@ -15,6 +15,12 @@ const toAsyncConstructor = (Target) => new Proxy(class AwaitCtor{
     }
 });
 
+class Table {
+    constructor(table) {
+        this.table = table;
+    }
+}
+
 class LuaApi {
     constructor (wasmModule = require('./wasm/main'), next) {
         ;(async ()=>{
