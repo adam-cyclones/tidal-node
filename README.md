@@ -1,6 +1,4 @@
-# wasm-lua-node-tidal
-
-Imagine a world where Lua was adopted and popular. I think Lua is like JavaScript only much much faster, samller and elegent. Lua surely desearves some love. 
+# Tidal Node
 
 Lua was concieved as an embeded language, designed to compliment other languages, a simple scripting language for compiled platforms. I can see this having a use for those needing performance and multithreading but in a way that isnt 100 miles away from JavaScript. Trust me Lua is so small and sort of firmilair you can be up and running in around an hour.
 
