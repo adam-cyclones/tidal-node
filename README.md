@@ -1,6 +1,10 @@
 # wasm-lua-node-tidal
 
-Welcome to my experiment, Its WIP and has not been tested on another machine yet, you will find most of the emscripten compiler commands in npm package.json "config". There is also a installer task for lua built in.
+Imagine a world where Lua was adopted and popular. I think Lua is like JavaScript only much much faster, samller and elegent. Lua surely desearves some love. 
+
+Lua was concieved as an embeded language, designed to compliment other languages, a simple scripting language for compiled platforms. I can see this having a use for those needing performance and multithreading but in a way that isnt 100 miles away from JavaScript. Trust me Lua is so small and sort of firmilair you can be up and running in around an hour.
+
+This is a web assembly project, it's WIP and has not been tested on another machines yet, you will find most of the emscripten compiler commands in npm package.json "config". There is also a installer task for Lua built in.
 
 ## Requirements
 #### compiler:
@@ -26,10 +30,10 @@ To just run use `npm start`
 ---
 
 ## What is working
-- Return flat lua tables to node!
+- Return flat Lua tables to node!
 
-### Highlights - "Its alive!"
-- returning flat Lua tables to JavaScript as Objects
+### Highlights - "It's alive!"
+- Returning flat Lua tables to JavaScript as Objects
 - Use module.exports and require like node.js
 - All lua files are modules by default and return a Lua table - Like node where all files return a JavaScript Object
 
