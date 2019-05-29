@@ -2,7 +2,7 @@
 
 Lua was concieved as an embeded language, designed to compliment other languages, Tidal Node is a library which brings Lua to node.js through WebAssembly and c++.
 
-tidal node is WIP and has not been tested on another machines yet, you will find most of the emscripten compiler commands in npm package.json "config". There is also a installer task for Lua built in.
+Tidal Node is WIP and not production ready - however I welcome the one or two people in the world that want to use this to get those PR's coming in. You will find most of the emscripten compiler commands in npm package.json "config". There is also a installer task for Lua built in, everything is subject to change.
 
 ## Requirements
 #### compiler:
@@ -22,7 +22,7 @@ Run `index.js`
 
 #### Compile only
 To just compile use `npm run compile`.
-#### run only
+#### Run only
 To just run use `npm start`
 
 ---
@@ -36,6 +36,8 @@ To just run use `npm start`
 - All lua files are modules by default and return a Lua table - Like node where all files return a JavaScript Object
 
 ### Todo
+- Investigate calling Libuv from Lua, interop between JavaScript and Lua and IPC.
+- Create running examples, maybe a lua Webserver and a Game engine port.
 - Refactor cleanup optimize repeat
 - Unit testing with Jest
 - Return strings
