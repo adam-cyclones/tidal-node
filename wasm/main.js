@@ -1156,11 +1156,11 @@ function updateGlobalBufferViews() {
 
 
 var STATIC_BASE = 1024,
-    STACK_BASE = 44944,
+    STACK_BASE = 44976,
     STACKTOP = STACK_BASE,
-    STACK_MAX = 5287824,
-    DYNAMIC_BASE = 5287824,
-    DYNAMICTOP_PTR = 44688;
+    STACK_MAX = 5287856,
+    DYNAMIC_BASE = 5287856,
+    DYNAMICTOP_PTR = 44720;
 
 assert(STACK_BASE % 16 === 0, 'stack must start aligned');
 assert(DYNAMIC_BASE % 16 === 0, 'heap must start aligned');
@@ -1611,8 +1611,8 @@ Module['asm'] = function(global, env, providedBuffer) {
   ;
   // import table
   env['table'] = wasmTable = new WebAssembly.Table({
-    'initial': 1162,
-    'maximum': 1162,
+    'initial': 1160,
+    'maximum': 1160,
     'element': 'anyfunc'
   });
   env['__memory_base'] = 1024; // tell the memory segments where to place themselves
@@ -1631,7 +1631,7 @@ var ASM_CONSTS = [];
 
 
 
-// STATICTOP = STATIC_BASE + 43920;
+// STATICTOP = STATIC_BASE + 43952;
 /* global initializers */  __ATINIT__.push({ func: function() { globalCtors() } });
 
 
@@ -1642,7 +1642,7 @@ var ASM_CONSTS = [];
 
 
 /* no memory initializer */
-var tempDoublePtr = 44928
+var tempDoublePtr = 44960
 assert(tempDoublePtr % 8 == 0);
 
 function copyTempFloat(ptr) { // functions, because inlining this code increases code size too much
@@ -2878,11 +2878,11 @@ function copyTempDouble(ptr) {
   
   var ERRNO_MESSAGES={0:"Success",1:"Not super-user",2:"No such file or directory",3:"No such process",4:"Interrupted system call",5:"I/O error",6:"No such device or address",7:"Arg list too long",8:"Exec format error",9:"Bad file number",10:"No children",11:"No more processes",12:"Not enough core",13:"Permission denied",14:"Bad address",15:"Block device required",16:"Mount device busy",17:"File exists",18:"Cross-device link",19:"No such device",20:"Not a directory",21:"Is a directory",22:"Invalid argument",23:"Too many open files in system",24:"Too many open files",25:"Not a typewriter",26:"Text file busy",27:"File too large",28:"No space left on device",29:"Illegal seek",30:"Read only file system",31:"Too many links",32:"Broken pipe",33:"Math arg out of domain of func",34:"Math result not representable",35:"File locking deadlock error",36:"File or path name too long",37:"No record locks available",38:"Function not implemented",39:"Directory not empty",40:"Too many symbolic links",42:"No message of desired type",43:"Identifier removed",44:"Channel number out of range",45:"Level 2 not synchronized",46:"Level 3 halted",47:"Level 3 reset",48:"Link number out of range",49:"Protocol driver not attached",50:"No CSI structure available",51:"Level 2 halted",52:"Invalid exchange",53:"Invalid request descriptor",54:"Exchange full",55:"No anode",56:"Invalid request code",57:"Invalid slot",59:"Bad font file fmt",60:"Device not a stream",61:"No data (for no delay io)",62:"Timer expired",63:"Out of streams resources",64:"Machine is not on the network",65:"Package not installed",66:"The object is remote",67:"The link has been severed",68:"Advertise error",69:"Srmount error",70:"Communication error on send",71:"Protocol error",72:"Multihop attempted",73:"Cross mount point (not really error)",74:"Trying to read unreadable message",75:"Value too large for defined data type",76:"Given log. name not unique",77:"f.d. invalid for this operation",78:"Remote address changed",79:"Can   access a needed shared lib",80:"Accessing a corrupted shared lib",81:".lib section in a.out corrupted",82:"Attempting to link in too many libs",83:"Attempting to exec a shared library",84:"Illegal byte sequence",86:"Streams pipe error",87:"Too many users",88:"Socket operation on non-socket",89:"Destination address required",90:"Message too long",91:"Protocol wrong type for socket",92:"Protocol not available",93:"Unknown protocol",94:"Socket type not supported",95:"Not supported",96:"Protocol family not supported",97:"Address family not supported by protocol family",98:"Address already in use",99:"Address not available",100:"Network interface is not configured",101:"Network is unreachable",102:"Connection reset by network",103:"Connection aborted",104:"Connection reset by peer",105:"No buffer space available",106:"Socket is already connected",107:"Socket is not connected",108:"Can't send after socket shutdown",109:"Too many references",110:"Connection timed out",111:"Connection refused",112:"Host is down",113:"Host is unreachable",114:"Socket already connected",115:"Connection already in progress",116:"Stale file handle",122:"Quota exceeded",123:"No medium (in tape drive)",125:"Operation canceled",130:"Previous owner died",131:"State not recoverable"};
   
-  var _stdin=44704;
+  var _stdin=44736;
   
-  var _stdout=44720;
+  var _stdout=44752;
   
-  var _stderr=44736;var FS={root:null,mounts:[],devices:{},streams:[],nextInode:1,nameTable:null,currentPath:"/",initialized:false,ignorePermissions:true,trackingDelegate:{},tracking:{openFlags:{READ:1,WRITE:2}},ErrnoError:null,genericErrors:{},filesystems:null,syncFSRequests:0,handleFSError:function (e) {
+  var _stderr=44768;var FS={root:null,mounts:[],devices:{},streams:[],nextInode:1,nameTable:null,currentPath:"/",initialized:false,ignorePermissions:true,trackingDelegate:{},tracking:{openFlags:{READ:1,WRITE:2}},ErrnoError:null,genericErrors:{},filesystems:null,syncFSRequests:0,handleFSError:function (e) {
         if (!(e instanceof FS.ErrnoError)) throw e + ' : ' + stackTrace();
         return ___setErrNo(e.errno);
       },lookupPath:function (path, opts) {
@@ -5844,12 +5844,6 @@ function copyTempDouble(ptr) {
     }
 
 
-  function __emval_incref(handle) {
-      if (handle > 4) {
-          emval_handle_array[handle].refcount += 1;
-      }
-    }
-
   
   
   var emval_symbols={};function getStringOrSymbol(address) {
@@ -5859,27 +5853,24 @@ function copyTempDouble(ptr) {
       } else {
           return symbol;
       }
-    }function __emval_new_cstring(v) {
-      return __emval_register(getStringOrSymbol(v));
+    }
+  
+  function emval_get_global() { return (function(){return Function;})()('return this')(); }function __emval_get_global(name) {
+      if(name===0){
+        return __emval_register(emval_get_global());
+      } else {
+        name = getStringOrSymbol(name);
+        return __emval_register(emval_get_global()[name]);
+      }
     }
 
-  function __emval_new_object() {
-      return __emval_register({});
+  function __emval_incref(handle) {
+      if (handle > 4) {
+          emval_handle_array[handle].refcount += 1;
+      }
     }
 
   
-  function requireHandle(handle) {
-      if (!handle) {
-          throwBindingError('Cannot use deleted val. handle = ' + handle);
-      }
-      return emval_handle_array[handle].value;
-    }function __emval_set_property(handle, key, value) {
-      handle = requireHandle(handle);
-      key = requireHandle(key);
-      value = requireHandle(value);
-      handle[key] = value;
-    }
-
   
   function requireRegisteredType(rawType, humanName) {
       var impl = registeredTypes[rawType];
@@ -5887,7 +5878,73 @@ function copyTempDouble(ptr) {
           throwBindingError(humanName + " has unknown type " + getTypeName(rawType));
       }
       return impl;
-    }function __emval_take_value(type, argv) {
+    }function craftEmvalAllocator(argCount) {
+      /*This function returns a new function that looks like this:
+      function emval_allocator_3(constructor, argTypes, args) {
+          var argType0 = requireRegisteredType(HEAP32[(argTypes >> 2)], "parameter 0");
+          var arg0 = argType0.readValueFromPointer(args);
+          var argType1 = requireRegisteredType(HEAP32[(argTypes >> 2) + 1], "parameter 1");
+          var arg1 = argType1.readValueFromPointer(args + 8);
+          var argType2 = requireRegisteredType(HEAP32[(argTypes >> 2) + 2], "parameter 2");
+          var arg2 = argType2.readValueFromPointer(args + 16);
+          var obj = new constructor(arg0, arg1, arg2);
+          return __emval_register(obj);
+      } */
+      var argsList = "";
+      for(var i = 0; i < argCount; ++i) {
+          argsList += (i!==0?", ":"")+"arg"+i; // 'arg0, arg1, ..., argn'
+      }
+  
+      var functionBody =
+          "return function emval_allocator_"+argCount+"(constructor, argTypes, args) {\n";
+  
+      for(var i = 0; i < argCount; ++i) {
+          functionBody +=
+              "var argType"+i+" = requireRegisteredType(Module['HEAP32'][(argTypes >> 2) + "+i+"], \"parameter "+i+"\");\n" +
+              "var arg"+i+" = argType"+i+".readValueFromPointer(args);\n" +
+              "args += argType"+i+"['argPackAdvance'];\n";
+      }
+      functionBody +=
+          "var obj = new constructor("+argsList+");\n" +
+          "return __emval_register(obj);\n" +
+          "}\n";
+  
+      /*jshint evil:true*/
+      return (new Function("requireRegisteredType", "Module", "__emval_register", functionBody))(
+          requireRegisteredType, Module, __emval_register);
+    }
+  
+  var emval_newers={};
+  
+  function requireHandle(handle) {
+      if (!handle) {
+          throwBindingError('Cannot use deleted val. handle = ' + handle);
+      }
+      return emval_handle_array[handle].value;
+    }function __emval_new(handle, argCount, argTypes, args) {
+      handle = requireHandle(handle);
+  
+      var newer = emval_newers[argCount];
+      if (!newer) {
+          newer = craftEmvalAllocator(argCount);
+          emval_newers[argCount] = newer;
+      }
+  
+      return newer(handle, argTypes, args);
+    }
+
+  function __emval_new_object() {
+      return __emval_register({});
+    }
+
+  function __emval_set_property(handle, key, value) {
+      handle = requireHandle(handle);
+      key = requireHandle(key);
+      value = requireHandle(value);
+      handle[key] = value;
+    }
+
+  function __emval_take_value(type, argv) {
       type = requireRegisteredType(type, '_emval_take_value');
       var v = type['readValueFromPointer'](argv);
       return __emval_register(v);
@@ -5936,10 +5993,10 @@ function copyTempDouble(ptr) {
     }
 
   
-  var ___tm_current=44784;
+  var ___tm_current=44816;
   
   
-  var ___tm_timezone=(stringToUTF8("GMT", 44832, 4), 44832);function _gmtime_r(time, tmPtr) {
+  var ___tm_timezone=(stringToUTF8("GMT", 44864, 4), 44864);function _gmtime_r(time, tmPtr) {
       var date = new Date(HEAP32[((time)>>2)]*1000);
       HEAP32[((tmPtr)>>2)]=date.getUTCSeconds();
       HEAP32[(((tmPtr)+(4))>>2)]=date.getUTCMinutes();
@@ -6548,8 +6605,6 @@ function nullFunc_i(x) { err("Invalid function pointer called with signature 'i'
 
 function nullFunc_ii(x) { err("Invalid function pointer called with signature 'ii'. Perhaps this is an invalid value (e.g. caused by calling a virtual method on a NULL pointer)? Or calling a function with an incorrect type, which will fail? (it is worth building your source files with -Werror (warnings are errors), as warnings can indicate undefined behavior which can cause this)");  err("Build with ASSERTIONS=2 for more info.");abort(x) }
 
-function nullFunc_iid(x) { err("Invalid function pointer called with signature 'iid'. Perhaps this is an invalid value (e.g. caused by calling a virtual method on a NULL pointer)? Or calling a function with an incorrect type, which will fail? (it is worth building your source files with -Werror (warnings are errors), as warnings can indicate undefined behavior which can cause this)");  err("Build with ASSERTIONS=2 for more info.");abort(x) }
-
 function nullFunc_iii(x) { err("Invalid function pointer called with signature 'iii'. Perhaps this is an invalid value (e.g. caused by calling a virtual method on a NULL pointer)? Or calling a function with an incorrect type, which will fail? (it is worth building your source files with -Werror (warnings are errors), as warnings can indicate undefined behavior which can cause this)");  err("Build with ASSERTIONS=2 for more info.");abort(x) }
 
 function nullFunc_iiii(x) { err("Invalid function pointer called with signature 'iiii'. Perhaps this is an invalid value (e.g. caused by calling a virtual method on a NULL pointer)? Or calling a function with an incorrect type, which will fail? (it is worth building your source files with -Werror (warnings are errors), as warnings can indicate undefined behavior which can cause this)");  err("Build with ASSERTIONS=2 for more info.");abort(x) }
@@ -6655,17 +6710,6 @@ function invoke_ii(index,a1) {
   }
 }
 
-function invoke_iid(index,a1,a2) {
-  var sp = stackSave();
-  try {
-    return dynCall_iid(index,a1,a2);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0 && e !== 'longjmp') throw e;
-    _setThrew(1, 0);
-  }
-}
-
 function invoke_iii(index,a1,a2) {
   var sp = stackSave();
   try {
@@ -6692,17 +6736,6 @@ function invoke_iiiii(index,a1,a2,a3,a4) {
   var sp = stackSave();
   try {
     return dynCall_iiiii(index,a1,a2,a3,a4);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0 && e !== 'longjmp') throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_iiiiid(index,a1,a2,a3,a4,a5) {
-  var sp = stackSave();
-  try {
-    return dynCall_iiiiid(index,a1,a2,a3,a4,a5);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0 && e !== 'longjmp') throw e;
@@ -6920,7 +6953,6 @@ var asmLibraryArg = {
   "nullFunc_fiii": nullFunc_fiii,
   "nullFunc_i": nullFunc_i,
   "nullFunc_ii": nullFunc_ii,
-  "nullFunc_iid": nullFunc_iid,
   "nullFunc_iii": nullFunc_iii,
   "nullFunc_iiii": nullFunc_iiii,
   "nullFunc_iiiii": nullFunc_iiiii,
@@ -6951,11 +6983,9 @@ var asmLibraryArg = {
   "invoke_fiii": invoke_fiii,
   "invoke_i": invoke_i,
   "invoke_ii": invoke_ii,
-  "invoke_iid": invoke_iid,
   "invoke_iii": invoke_iii,
   "invoke_iiii": invoke_iiii,
   "invoke_iiiii": invoke_iiiii,
-  "invoke_iiiiid": invoke_iiiiid,
   "invoke_iiiiii": invoke_iiiiii,
   "invoke_iiiiiii": invoke_iiiiiii,
   "invoke_iiiiiiii": invoke_iiiiiiii,
@@ -7023,8 +7053,9 @@ var asmLibraryArg = {
   "__embind_register_std_wstring": __embind_register_std_wstring,
   "__embind_register_void": __embind_register_void,
   "__emval_decref": __emval_decref,
+  "__emval_get_global": __emval_get_global,
   "__emval_incref": __emval_incref,
-  "__emval_new_cstring": __emval_new_cstring,
+  "__emval_new": __emval_new,
   "__emval_new_object": __emval_new_object,
   "__emval_register": __emval_register,
   "__emval_set_property": __emval_set_property,
@@ -7063,10 +7094,12 @@ var asmLibraryArg = {
   "_tzset": _tzset,
   "abortOnCannotGrowMemory": abortOnCannotGrowMemory,
   "count_emval_handles": count_emval_handles,
+  "craftEmvalAllocator": craftEmvalAllocator,
   "craftInvokerFunction": craftInvokerFunction,
   "createNamedFunction": createNamedFunction,
   "embind__requireFunction": embind__requireFunction,
   "embind_init_charCodes": embind_init_charCodes,
+  "emval_get_global": emval_get_global,
   "ensureOverloadTable": ensureOverloadTable,
   "exposePublicSymbol": exposePublicSymbol,
   "extendError": extendError,
@@ -7386,10 +7419,6 @@ var dynCall_ii = Module["dynCall_ii"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return Module["asm"]["dynCall_ii"].apply(null, arguments) };
-var dynCall_iid = Module["dynCall_iid"] = function() {
-  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
-  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
-  return Module["asm"]["dynCall_iid"].apply(null, arguments) };
 var dynCall_iii = Module["dynCall_iii"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');

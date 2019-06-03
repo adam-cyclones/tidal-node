@@ -23,7 +23,7 @@ local fs = {}
 
 function fs.readFile(filename)
     local fh = assert(io.open(filename, "rb"))
-    local contents = assert(fh:read("a")) -- "a" in Lua 5.3; "*a" in Lua 5.1 and 5.2
+    local contents = assert(fh:read("a"))
     fh:close()
     return contents
 end
@@ -46,7 +46,7 @@ local Module__prototype_handlers = {}
 --------
 function Module__prototype_handlers.__call( this, request, parent )
     -- always existing
-    local isMain = true; 
+    local isMain = true;
 
     -- construct module if not already existing and cached
     local module = this.__load(request, parent, isMain);
@@ -90,12 +90,12 @@ return module.exports;
     -- TODO: Throw assertions
     local module_exports, err = load(content, nil, nil, env);
     if module_exports then
-    local okay, module_exports = pcall(module_exports)
-    if okay then
-        return module_exports;
-    else
-        print("Execution error:", module_exports)
-    end
+        local okay, module_exports = pcall(module_exports)
+        if okay then
+            return module_exports;
+        else
+            print("Execution error:", module_exports)
+        end
     else
         print("Compilation error:", module_exports)
     end
@@ -104,7 +104,7 @@ end
 
 function require__prototype_handlers.__call( this, request )
     -- TODO: return and call and parent all need finalizing
-    return Module._(
+    local _exports = Module._(
         table.unpack(
             Module(
                 request, -- thisModule
@@ -112,6 +112,11 @@ function require__prototype_handlers.__call( this, request )
             )
         )
     )
+    if ( type(_exports) ~= "table") then
+        return { _exports };
+    else
+        return _exports;
+    end
 end
 setmetatable(require, require__prototype_handlers)
 

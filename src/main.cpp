@@ -102,7 +102,6 @@ auto require (string path_to_file, bool isMain = false)
 	// Is package lookup
 	else if (path_to_file.find(SEP) == string::npos)
 	{
-
 		// TODO: lookup lua_modules and or package path
 		const string lookup = path_to_file;
 		// Get lua path
@@ -113,6 +112,7 @@ auto require (string path_to_file, bool isMain = false)
 		cout << Error_resolve_module(lookup, resolve_L, lua_path) << endl;
 		cout << Warn()+" Lua package lookup is not implimented yet. requested lookup '"+lookup+"' will return nil \n" << endl;
 	}
+	// never reached but removes error
 }
 
 // string lua_run_string(string script) {
@@ -137,12 +137,6 @@ val lua_run_file (const string &path_to_file)
 
 	val table_transport_js_object = val::object();
 
-	// if (type_name(L, file_exports) == "string") {
-	// 	return (string)file_exports;
-	// }
-	// if (type_name(L, file_exports) == "number") {
-	// 	return (int)file_exports;
-	// }
 	if (type_name(L, file_exports) == "table") {
 
 		for (auto& kv : (sol::table) file_exports)
@@ -151,27 +145,28 @@ val lua_run_file (const string &path_to_file)
 			{
 				// Get table key as string.
 				string key = kv.first.as<string>();
-				cout << key << endl;
 
-				// Handle value typess
+				// Handle value types
 				if (kv.second.get_type() == sol::type::string)
 				{
 					auto value = kv.second.as<string>();
 					cout << value << endl;
-					table_transport_js_object.set(key, value);
 				}
 				if (kv.second.get_type() == sol::type::number)
 				{
 					auto value = kv.second.as<double>();
-					cout << value << endl;
 					table_transport_js_object.set(key, value);
-
 				}
 				if (kv.second.get_type() == sol::type::boolean)
 				{
 					auto value = kv.second.as<bool>();
-					cout << value << endl;
 					table_transport_js_object.set(key, value);
+				}
+				if (kv.second.get_type() == sol::type::function)
+				{
+					// create a stub to be proxied in JavaScript
+					val x = val::global("Function").new_();
+					table_transport_js_object.set(key, x);
 				}
 				if (kv.second.get_type() == sol::type::table)
 				{
@@ -183,24 +178,20 @@ val lua_run_file (const string &path_to_file)
 			{
 				// Get table key as number.
 				lua_Number index = kv.first.as<lua_Number>();
-				cout << "index: " << index << endl;
 				// Handle value typess
 				if (kv.second.get_type() == sol::type::string)
 				{
 					auto value = kv.second.as<string>();
-					cout << value << endl;
 					table_transport_js_object.set(index, value);
 				}
 				if (kv.second.get_type() == sol::type::number)
 				{
 					auto value = kv.second.as<double>();
-					cout << value << endl;
 					table_transport_js_object.set(index, value);
 				}
 				if (kv.second.get_type() == sol::type::boolean)
 				{
 					auto value = kv.second.as<bool>();
-					cout << value << endl;
 					table_transport_js_object.set(index, value);
 				}
 				if (kv.second.get_type() == sol::type::table)
@@ -208,21 +199,27 @@ val lua_run_file (const string &path_to_file)
 					// recurse
 				}
 			}
-
-			// You can access the value of this pair using `kv.second()`.
 		}
 	}
-
-	// create a new JavaScript Object
-	val lua_table_values = val::object();
-	lua_table_values.set("hello", "world");
-
-
 	return table_transport_js_object;
+}
+
+int lua_call_function (string path_to_file, string func_name) {
+	// tables ruturned by lua which contain functions are represented by emscripten blank functions
+	// the function from the JavaScript side will be substitued with a Proxy, the proxy will be passed -
+	// the file name, function name, and args
+	// the function will have already been stored in a lua global table
+	// the table will be have a key of path_to_file and that function
+	// the call to that function will provide the arguments from here
+	// the return values will be passed ack to here and returned to JavaScript
+	cout << "C++" << path_to_file << " " << func_name << endl;
+	
+	return 1;
 }
 
 EMSCRIPTEN_BINDINGS (my_module) {
 	emscripten::function("set_project_root", &set_project_root);
 	// emscripten::function("lua_run_string", &lua_run_string);
 	emscripten::function("lua_run_file", &lua_run_file);
+	emscripten::function("lua_call_function", &lua_call_function);
 };

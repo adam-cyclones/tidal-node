@@ -15,12 +15,6 @@ const toAsyncConstructor = (Target) => new Proxy(class AwaitCtor{
     }
 });
 
-class Table {
-    constructor(table) {
-        this.table = table;
-    }
-}
-
 class LuaApi {
     constructor (wasmModule = require('./wasm/main'), next) {
         ;(async ()=>{
@@ -52,7 +46,25 @@ class LuaApi {
      * @throws {Exception} 
      */
     doFile (pathToFile) {
-        return this.L.lua_run_file(pathToFile);
+        const fromLua = this.L.lua_run_file(pathToFile);
+
+        for (const entry of Object.entries(fromLua)) {
+            if (typeof entry[1] === "function") {
+                const key = entry[0];
+                // rename for debugging
+                Object.defineProperty(fromLua[key], "name", {
+                    value: key+"_lua_function"
+                })
+                fromLua[key] = new Proxy(fromLua[key], {
+                    apply: (target, thisArg, argumentsList) => {
+                        const luaReturnValue = this.L.lua_call_function(pathToFile, key);
+                        return luaReturnValue;
+                    }
+                })
+            }
+        }
+
+        return fromLua;
     }
     /**
      * [Loads and runs the given string]
@@ -176,6 +188,6 @@ const Lua = toAsyncConstructor(LuaApi);
 
 
     // L.doFile("./src/hello.lua")
-    console.log('lua returned:', L.doFile("/Users/acrockett/Code/Lua/lua-wasm/src/hello.lua"));
+    console.log('lua returned:', L.doFile("/Users/acrockett/Code/Lua/lua-wasm/src/hello.lua").flash());
 
-})()
+})();
