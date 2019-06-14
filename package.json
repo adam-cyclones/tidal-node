@@ -1,5 +1,5 @@
 {
-  "name": "lua-wasm",
+  "name": "tidal-node",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -17,7 +17,7 @@
       "wasmOnly": "-s WASM=1 -s ONLY_MY_CODE=1",
       "searchPath": "-Itmp/lua-5.3.5/src",
       "useEmbind": "--bind",
-      "demangle": " -s DEMANGLE_SUPPORT=1  -g3",
+      "demangle": " -s DEMANGLE_SUPPORT=1  -g4",
       "disableExceptionCatching": "-s DISABLE_EXCEPTION_CATCHING=0",
       "env": "-s ENVIRONMENT=node "
     }

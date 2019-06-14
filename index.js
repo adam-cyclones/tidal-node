@@ -15,12 +15,6 @@ const toAsyncConstructor = (Target) => new Proxy(class AwaitCtor{
     }
 });
 
-class Table {
-    constructor(table) {
-        this.table = table;
-    }
-}
-
 class LuaApi {
     constructor (wasmModule = require('./wasm/main'), next) {
         ;(async ()=>{
@@ -52,7 +46,63 @@ class LuaApi {
      * @throws {Exception} 
      */
     doFile (pathToFile) {
-        return this.L.lua_run_file(pathToFile);
+        const fromLua = this.L.lua_run_file(pathToFile);
+
+        for (const entry of Object.entries(fromLua)) {
+            if (typeof entry[1] === "function") {
+                const key = entry[0];
+                // rename for debugging
+                Object.defineProperty(fromLua[key], "name", {
+                    value: key+"_lua_function"
+                })
+                fromLua[key] = new Proxy(fromLua[key], {
+                    apply: (target, thisArg, argumentsList) => {
+                        // An object acting as an array
+                        for (let arg of Array.from(argumentsList)) {
+                            switch (typeof arg) {
+                                case "string":
+                                    this.L.push_fn_arg_string(arg);
+                                    break
+                                case "number":
+                                    if (parseFloat(arg) % 1 === 0) {
+                                        this.L.push_fn_arg_int(arg);
+                                    }
+                                    else {
+                                        this.L.push_fn_arg_double(arg);
+                                    }
+                                    break
+                                case "boolean":
+                                    console.log(arg)
+                                    this.L.push_fn_arg_bool(arg);
+                                    break
+                                case "object":
+                                    if (arg === null) {
+                                        this.L.push_fn_arg_string("null");
+                                    }
+                                    break
+                                case "undefined":
+                                    this.L.push_fn_arg_string("undefined");
+                                    break
+                                default:
+                                    throw new Error("cannot handle type of argument " + typeof arg)
+                            }
+                        }
+                        // Cleanup
+                        const luaReturned = this.L.lua_call_function(pathToFile, key);
+
+                        switch (luaReturned.value) {
+                            case "null":
+                                return null;
+                            default:
+                                return luaReturned.value;
+                        }
+
+                    }
+                })
+            }
+        }
+
+        return fromLua;
     }
     /**
      * [Loads and runs the given string]
@@ -176,6 +226,6 @@ const Lua = toAsyncConstructor(LuaApi);
 
 
     // L.doFile("./src/hello.lua")
-    console.log('lua returned:', L.doFile("/Users/acrockett/Code/Lua/lua-wasm/src/hello.lua"));
+    L.doFile("/Users/acrockett/Code/Lua/tidal-node/src/hello.lua").flash(1, 2);
 
-})()
+})();
