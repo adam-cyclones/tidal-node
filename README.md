@@ -27,6 +27,9 @@ node 10.0.0^
 - Returning flat Lua Tables to JavaScript as Objects
 - Use module.exports and require like node.js
 - All lua files are modules by default and return a Lua table - Like node where all files return a JavaScript Object
+- FFI can now call Lua functions directly in JavaScript only if that Lua function was exported.
+- FFI can handle functions returning tables and nested tables, strings, booleans, nil.
+- FFI cannot yet handle functions which return; functions, or tables with function members.
 
 ### Roadmap
 - Investigate calling Libuv from Lua, interop between JavaScript and Lua and IPC.
