@@ -2,3 +2,5 @@ tmp/*
 local/*
 ./wasm/*
 .vscode/*
+
+wasm/*

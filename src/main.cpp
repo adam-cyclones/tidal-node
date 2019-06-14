@@ -8,6 +8,9 @@
 #include <emscripten/val.h>
 #include <emscripten/bind.h>
 #include <emscripten.h>
+#include <string>
+#include <vector>
+#include <stdarg.h>
 #include "../tmp/lua-5.3.5/src/lua.hpp"
 #include "./include/sol2/sol.hpp"
 #include <cassert>
@@ -29,9 +32,6 @@ void set_project_root (const string project_root) {
 	PROJECT_ROOT = project_root;
 }
 
-typedef std::variant<string, int> alpha_numeric_key;
-typedef std::variant<string, double, bool> lua_table_values;
-typedef map<alpha_numeric_key, lua_table_values> lua_table_map;
 // tidal_require
 sol::table tidal_require (string path_to_file, bool isMain = false)
 {
@@ -126,6 +126,81 @@ auto require (string path_to_file, bool isMain = false)
 // 	return value;
 // }
 
+val lua_table_to_js_obj (sol::table &table) {
+	val table_transport_js_object = val::object();
+
+	for (auto& kv : (sol::table) table)
+	{
+		if (kv.first.get_type() == sol::type::string)
+		{
+			// Get table key as string.
+			string key = kv.first.as<string>();
+
+			// Handle value types
+			if (kv.second.get_type() == sol::type::string)
+			{
+				auto value = kv.second.as<string>();
+				table_transport_js_object.set(key, value);
+			}
+			if (kv.second.get_type() == sol::type::number)
+			{
+				auto value = kv.second.as<double>();
+				table_transport_js_object.set(key, value);
+			}
+			if (kv.second.get_type() == sol::type::boolean)
+			{
+				auto value = kv.second.as<bool>();
+				table_transport_js_object.set(key, value);
+			}
+			if (kv.second.get_type() == sol::type::function)
+			{
+				// create a stub to be proxied in JavaScript
+				val blank_function = val::global("Function").new_();
+				table_transport_js_object.set(key, blank_function);
+			}
+			if (kv.second.get_type() == sol::type::table)
+			{
+				auto value = kv.second.as<sol::table>();
+				table_transport_js_object.set(key, lua_table_to_js_obj(value));
+			}
+		}
+
+		if (kv.first.get_type() == sol::type::number)
+		{
+			// Get table key as number.
+			lua_Number index = kv.first.as<lua_Number>();
+			// Handle value typess
+			if (kv.second.get_type() == sol::type::string)
+			{
+				auto value = kv.second.as<string>();
+				table_transport_js_object.set(index, value);
+			}
+			if (kv.second.get_type() == sol::type::number)
+			{
+				auto value = kv.second.as<double>();
+				table_transport_js_object.set(index, value);
+			}
+			if (kv.second.get_type() == sol::type::boolean)
+			{
+				auto value = kv.second.as<bool>();
+				table_transport_js_object.set(index, value);
+			}
+			if (kv.second.get_type() == sol::type::function)
+			{
+				// create a stub to be proxied in JavaScript
+				val blank_function = val::global("Function").new_();
+				table_transport_js_object.set(index, blank_function);
+			}
+			if (kv.second.get_type() == sol::type::table)
+			{
+				// recurse
+			}
+		}
+	}
+
+	return table_transport_js_object;
+}
+
 // lua_run_file
 val lua_run_file (const string &path_to_file)
 {
@@ -133,93 +208,101 @@ val lua_run_file (const string &path_to_file)
 	// Bootstrap new require
 	lua.set_function("require", &require);
 
-	auto file_exports = lua.script("return require('"+ path_to_file +"', true);");
+	auto compile_lua_module = lua.load("return require('"+ path_to_file +"', true);");
+	auto file_exports = compile_lua_module();
 
-	val table_transport_js_object = val::object();
+	sol::table cast_return_value = (sol::table)file_exports;
+	val table_transport_js_object = lua_table_to_js_obj(cast_return_value);
 
-	if (type_name(L, file_exports) == "table") {
-
-		for (auto& kv : (sol::table) file_exports)
-		{
-			if (kv.first.get_type() == sol::type::string)
-			{
-				// Get table key as string.
-				string key = kv.first.as<string>();
-
-				// Handle value types
-				if (kv.second.get_type() == sol::type::string)
-				{
-					auto value = kv.second.as<string>();
-					cout << value << endl;
-				}
-				if (kv.second.get_type() == sol::type::number)
-				{
-					auto value = kv.second.as<double>();
-					table_transport_js_object.set(key, value);
-				}
-				if (kv.second.get_type() == sol::type::boolean)
-				{
-					auto value = kv.second.as<bool>();
-					table_transport_js_object.set(key, value);
-				}
-				if (kv.second.get_type() == sol::type::function)
-				{
-					// create a stub to be proxied in JavaScript
-					val x = val::global("Function").new_();
-					table_transport_js_object.set(key, x);
-				}
-				if (kv.second.get_type() == sol::type::table)
-				{
-					// recurse
-				}
-			}
-
-			if (kv.first.get_type() == sol::type::number)
-			{
-				// Get table key as number.
-				lua_Number index = kv.first.as<lua_Number>();
-				// Handle value typess
-				if (kv.second.get_type() == sol::type::string)
-				{
-					auto value = kv.second.as<string>();
-					table_transport_js_object.set(index, value);
-				}
-				if (kv.second.get_type() == sol::type::number)
-				{
-					auto value = kv.second.as<double>();
-					table_transport_js_object.set(index, value);
-				}
-				if (kv.second.get_type() == sol::type::boolean)
-				{
-					auto value = kv.second.as<bool>();
-					table_transport_js_object.set(index, value);
-				}
-				if (kv.second.get_type() == sol::type::table)
-				{
-					// recurse
-				}
-			}
-		}
-	}
 	return table_transport_js_object;
 }
 
-int lua_call_function (string path_to_file, string func_name) {
+// FFI Javascript to Lua function calls
+vector<std::variant<string, char, int, double, bool>> tmp_store_fn_args;
+
+// FFI handle args in
+void push_fn_arg_int (int arg) {
+	tmp_store_fn_args.push_back(arg);
+}
+void push_fn_arg_double (double arg) {
+	tmp_store_fn_args.push_back(arg);
+}
+void push_fn_arg_string (string arg) {
+	if (arg == "null") {
+		tmp_store_fn_args.push_back(-1);
+	}
+	else if (arg == "undefined") {
+		tmp_store_fn_args.push_back(-1);
+	}
+	else {
+		tmp_store_fn_args.push_back(arg);
+	}
+}
+void push_fn_arg_bool (bool arg) {
+	tmp_store_fn_args.push_back(arg);
+}
+
+val lua_call_function (string path_to_file, string func_name) {
 	// tables ruturned by lua which contain functions are represented by emscripten blank functions
 	// the function from the JavaScript side will be substitued with a Proxy, the proxy will be passed -
 	// the file name, function name, and args
 	// the function will have already been stored in a lua global table
 	// the table will be have a key of path_to_file and that function
 	// the call to that function will provide the arguments from here
-	// the return values will be passed ack to here and returned to JavaScript
-	cout << "C++" << path_to_file << " " << func_name << endl;
-	
-	return 1;
+	// the return values will be passed back to here and returned to JavaScript
+
+	val returns_transport_js_object = val::object();
+	sol::table lua_call_function_args_to_lua = lua.create_table();
+	int index = 0;
+
+	for (const auto& js_value : tmp_store_fn_args) {
+		std::visit([&](const auto &value) {
+			index += 1;
+			lua_call_function_args_to_lua.set(index, value);
+		}, js_value);
+	}
+
+
+	// Store a temp global in lua with the args from JavaScript
+	lua["lua_call_function_args"] = lua_call_function_args_to_lua;
+
+	auto call_fn = lua.load("return require.__cache['"+ path_to_file +"'].exports['"+ func_name +"'](table.unpack(lua_call_function_args))");
+
+	auto lua_return_value = call_fn();
+	string lua_return_typename = luaL_typename(L, -1);
+	if (lua_return_typename == "string") {
+		string cast_return_value = (string)lua_return_value;
+		returns_transport_js_object.set("value", cast_return_value);
+	}
+	else if (lua_return_typename == "number") {
+		double cast_return_value = (double)lua_return_value;
+		returns_transport_js_object.set("value", cast_return_value);
+	}
+	else if (lua_return_typename == "nil") {
+		returns_transport_js_object.set("value", "null");
+	}
+	else if (lua_return_typename == "table") {
+		sol::table cast_return_value = (sol::table)lua_return_value;
+		returns_transport_js_object.set("value", lua_table_to_js_obj(cast_return_value));
+	}
+	else { // bool
+		bool cast_return_value = (bool)lua_return_value;
+		returns_transport_js_object.set("value", cast_return_value);
+	}
+
+	return returns_transport_js_object;
 }
 
-EMSCRIPTEN_BINDINGS (my_module) {
+EMSCRIPTEN_BINDINGS (tidal_node) {
+	emscripten::register_vector<int>("vector<int>");
 	emscripten::function("set_project_root", &set_project_root);
 	// emscripten::function("lua_run_string", &lua_run_string);
 	emscripten::function("lua_run_file", &lua_run_file);
+
+	// FFI
 	emscripten::function("lua_call_function", &lua_call_function);
+	emscripten::function("push_fn_arg_string", &push_fn_arg_string);
+	emscripten::function("push_fn_arg_int", &push_fn_arg_int);
+	emscripten::function("push_fn_arg_double", &push_fn_arg_double);
+	emscripten::function("push_fn_arg_bool", &push_fn_arg_bool);
 };

@@ -112,6 +112,7 @@ function require__prototype_handlers.__call( this, request )
             )
         )
     )
+    -- Wrap all values as tables if not not exporting a table
     if ( type(_exports) ~= "table") then
         return { _exports };
     else

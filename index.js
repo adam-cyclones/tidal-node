@@ -57,8 +57,46 @@ class LuaApi {
                 })
                 fromLua[key] = new Proxy(fromLua[key], {
                     apply: (target, thisArg, argumentsList) => {
-                        const luaReturnValue = this.L.lua_call_function(pathToFile, key);
-                        return luaReturnValue;
+                        // An object acting as an array
+                        for (let arg of Array.from(argumentsList)) {
+                            switch (typeof arg) {
+                                case "string":
+                                    this.L.push_fn_arg_string(arg);
+                                    break
+                                case "number":
+                                    if (parseFloat(arg) % 1 === 0) {
+                                        this.L.push_fn_arg_int(arg);
+                                    }
+                                    else {
+                                        this.L.push_fn_arg_double(arg);
+                                    }
+                                    break
+                                case "boolean":
+                                    console.log(arg)
+                                    this.L.push_fn_arg_bool(arg);
+                                    break
+                                case "object":
+                                    if (arg === null) {
+                                        this.L.push_fn_arg_string("null");
+                                    }
+                                    break
+                                case "undefined":
+                                    this.L.push_fn_arg_string("undefined");
+                                    break
+                                default:
+                                    throw new Error("cannot handle type of argument " + typeof arg)
+                            }
+                        }
+                        // Cleanup
+                        const luaReturned = this.L.lua_call_function(pathToFile, key);
+
+                        switch (luaReturned.value) {
+                            case "null":
+                                return null;
+                            default:
+                                return luaReturned.value;
+                        }
+
                     }
                 })
             }
@@ -188,6 +226,6 @@ const Lua = toAsyncConstructor(LuaApi);
 
 
     // L.doFile("./src/hello.lua")
-    console.log('lua returned:', L.doFile("/Users/acrockett/Code/Lua/lua-wasm/src/hello.lua").flash());
+    L.doFile("/Users/acrockett/Code/Lua/tidal-node/src/hello.lua").flash(1, 2);
 
 })();
