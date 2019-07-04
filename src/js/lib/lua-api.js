@@ -1,31 +1,27 @@
-const Module = require('./wasm/main');
-const { resolve, dirname } = require('path');
-
-const toAsyncConstructor = (Target) => new Proxy(class AwaitCtor{
-    static async new(...args) {
-        return new Promise(next => {
-            Reflect.construct(Target, [...args, next]);
-        });
-    }
-},
-{
-    construct() {
-        const className = Target.prototype.constructor.name;
-        throw new Error(`${className} has been cast to an async only constructor, use ${className}.new() to construct this class.`);
-    }
-});
+const { dirname, resolve } = require('path');
+const toAsyncConstructor = require('./async-constructor');
 
 class LuaApi {
-    constructor (wasmModule = require('./wasm/main'), next) {
+    constructor (customConfig, next) {
+        if (customConfig === null) {
+            customConfig = {};
+        }
+
+        const PROJECT_ROOT = customConfig.projectRoot || dirname(require.main.filename || process.mainModule.filename);
+        const BINARY_DIR = "wasm/";
+        const EM_GLUE_NAME = "main";
+        const WASM_MODULE = require(resolve(PROJECT_ROOT, BINARY_DIR, EM_GLUE_NAME ));
+
         ;(async ()=>{
             this.L = await new Promise(res => {
-                wasmModule.onRuntimeInitialized = () => {
-                    res(wasmModule)
+                WASM_MODULE.onRuntimeInitialized = () => {
+                    WASM_MODULE.arguments.push(PROJECT_ROOT)
+                    res(WASM_MODULE)
                 }
             })
             // tell c++ and lua about this projects root.
             try {
-                this.L.set_project_root(dirname(require.main.filename || process.mainModule.filename));
+                this.L.set_project_root(PROJECT_ROOT);
             }
             catch (err) {
                 console.log(err);
@@ -47,17 +43,22 @@ class LuaApi {
      */
     doFile (pathToFile) {
         const fromLua = this.L.lua_run_file(pathToFile);
+        // handle single values
+        const len = Object.keys(fromLua).length;
 
+        // handle tables
         for (const entry of Object.entries(fromLua)) {
+
             if (typeof entry[1] === "function") {
+
                 const key = entry[0];
-                // rename for debugging
+                // rename for clarity
                 Object.defineProperty(fromLua[key], "name", {
                     value: key+"_lua_function"
-                })
+                });
                 fromLua[key] = new Proxy(fromLua[key], {
                     apply: (target, thisArg, argumentsList) => {
-                        // An object acting as an array
+                        // parse types
                         for (let arg of Array.from(argumentsList)) {
                             switch (typeof arg) {
                                 case "string":
@@ -72,7 +73,6 @@ class LuaApi {
                                     }
                                     break
                                 case "boolean":
-                                    console.log(arg)
                                     this.L.push_fn_arg_bool(arg);
                                     break
                                 case "object":
@@ -101,7 +101,12 @@ class LuaApi {
                 })
             }
         }
-
+        if (len === 1) {
+            return fromLua[Object.keys(fromLua)[0]];
+        }
+        else if (len === 0) {
+            return {};
+        }
         return fromLua;
     }
     /**
@@ -134,98 +139,6 @@ class LuaApi {
     getGlobal () {
 
     }
-    /**
-     * [Does the equivalent to t[k] = v, where t is the value at the given valid index and v is the value at the top of the stack. This function pops the value from the stack.]
-     * @type {Number} index 
-     * @type {String} key 
-     */
-    setTableField () {
-
-    }
-    /**
-     * [Pushes onto the stack the value t[key], where t is the value at the given valid index.]
-     * @type {Number} index 
-     * @type {String} key 
-     */
-    getTableField () {
-
-    }
-    /**
-     * [Get value at the given acceptable index]
-     * @type {Number} index 
-     * @return value
-     */
-    toValue () {
-
-    }
-    /**
-     * [Calls a function. Gets the function and arguments from the stack. Pushes the results onto the stack. See https://www.lua.org/manual/5.1/manual.html#pdf-pcall for more information]
-     * @type {Number} args
-     * @type {Number} results
-     * @throws {Exception}
-     */
-    call () {
-
-    }
-    /**
-     * [Yields a coroutine.]
-     * @type {Number} args 
-     */
-    yield () {
-
-    }
-    /**
-     * [Starts and resumes a coroutine in a given thread.]
-     * @type {Number} args 
-     */
-    resume () {
-
-    }
-    /**
-     * [Pushes a value n onto the stack]
-     * @type n
-     */
-    push () {
-
-    }
-    /**
-     * [Pops n elements from the stack. Default value is 1]
-     * @type {Number} n 
-     */
-    pop () {
-
-    }
-    /**
-     * [Returns the index of the top element in the stack. Because indices start at 1, this result is equal to the number of elements in the stack (and so 0 means an empty stack)]
-     * @return {Number} 
-     */
-    getTop () {
-
-    }
-    /**
-     * [Accepts any acceptable index, or 0, and sets the stack top to this index. If the new top is larger than the old one, then the new elements are filled with nil. If index is 0, then all stack elements are removed]
-     * @type {Number} index 
-     */
-    setTop () {
-
-    }
-    /**
-     * [Moves the top element into the given position (and pops it), without shifting any element (therefore replacing the value at the given position)]
-     * @type {Number} index 
-     */
-    replace() {
-
-    }
 }
 
-const Lua = toAsyncConstructor(LuaApi);
-
-;(async ()=>{
-
-    const L = await Lua.new(Module);
-
-
-    // L.doFile("./src/hello.lua")
-    L.doFile("/Users/acrockett/Code/Lua/tidal-node/src/hello.lua").flash(1, 2);
-
-})();
+module.exports = toAsyncConstructor(LuaApi);

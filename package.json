@@ -2,7 +2,7 @@
   "name": "tidal-node",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/js/tidal-node.js",
   "config": {
     "lua": {
       "version": "5.3.5",
@@ -17,26 +17,33 @@
       "wasmOnly": "-s WASM=1 -s ONLY_MY_CODE=1",
       "searchPath": "-Itmp/lua-5.3.5/src",
       "useEmbind": "--bind",
-      "demangle": " -s DEMANGLE_SUPPORT=1  -g4",
+      "demangle": " -s DEMANGLE_SUPPORT=1 -g4",
       "disableExceptionCatching": "-s DISABLE_EXCEPTION_CATCHING=0",
       "env": "-s ENVIRONMENT=node "
     }
   },
   "scripts": {
-    "preinstall": "mkdir tmp && mkdir bin && npm run install-luae",
-    "start": "node index.js",
-    "install-lua": "npm run clean-tmp && cd tmp && curl -R -O http://www.lua.org/ftp/lua-$npm_package_config_lua_version.tar.gz && tar zxf lua-$npm_package_config_lua_version.tar.gz && cd lua-$npm_package_config_lua_version && make generic CC='emcc -s WASM=1 -Wfatal-errors -fno-stack-protector -fno-common' && npm run compile && npm run test",
+    "preinstall": "npm run clean && mkdir tmp && mkdir bin && npm run lua-install",
+    "start": "node src/js/tidal-node.js",
     "dav-stat": "echo exposed: $npm_package_config_wasm_exposeFunctions\n echo lua-version: $npm_package_config_lua_version",
     "compile": "emcc $npm_package_config_wasm_useEmbind $npm_package_config_wasm_env $npm_package_config_wasm_demangle $npm_package_config_wasm_searchPath $npm_package_config_wasm_disableExceptionCatching $npm_package_config_wasm_target $npm_package_config_lua_archiveLib $npm_package_config_wasm_optimizations -s NODERAWFS=1 -s ASSERTIONS=1 -s EXTRA_EXPORTED_RUNTIME_METHODS=\"$npm_package_config_wasm_exposeRuntimeMethods\" $npm_package_config_wasm_output",
-    "compile-run": "npm run compile && npm start",
+    "compile-run": "npm run compile && npm run test",
+    "lua-install": "cd tmp && curl -R -O http://www.lua.org/ftp/lua-$npm_package_config_lua_version.tar.gz && tar zxf lua-$npm_package_config_lua_version.tar.gz && cd lua-$npm_package_config_lua_version && make generic CC='emcc -s WASM=1 -Wfatal-errors -fno-stack-protector -fno-common' && npm run compile && cd ../../",
     "lua-compile": "&& make CC='emcc -s WASM=1' install INSTALL_TOP=../../../local/lua-$npm_package_config_lua_version ",
-    "test": "npm run start",
-    "clean": "npm run clean-tmp && rm -rf node_modules local",
-    "clean-tmp": "rm -rf tmp/*"
+    "test": "npm run test-js",
+    "test-js": "jest",
+    "test-sandbox": "node ./test/test-sandbox.js",
+    "clean": "rm -rf tmp node_modules local bin"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "chalk": "^2.4.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.5",
+    "@babel/preset-env": "^7.4.5",
+    "babel-jest": "^24.8.0",
+    "jest": "^24.8.0"
   }
 }

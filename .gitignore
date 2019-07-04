@@ -2,5 +2,5 @@ tmp/*
 local/*
 ./wasm/*
 .vscode/*
-
+node_modules
 wasm/*
