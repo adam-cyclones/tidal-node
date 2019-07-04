@@ -11,4 +11,5 @@ EMSCRIPTEN_BINDINGS (tidal_node) {
 	emscripten::function("push_fn_arg_int", &push_fn_arg_int);
 	emscripten::function("push_fn_arg_double", &push_fn_arg_double);
 	emscripten::function("push_fn_arg_bool", &push_fn_arg_bool);
+	// emscripten::function("clear_fn_args", &clear_fn_args);
 };

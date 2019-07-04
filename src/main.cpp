@@ -32,94 +32,10 @@ using namespace emscripten;
 
 #include "./include/tidal/tidal-type-convertion.hpp"
 
-// val lua_table_to_js_obj (sol::table &table)
-// {
-// 	val table_transport_js_object = val::object();
-
-// 	for (auto& kv : (sol::table) table)
-// 	{
-// 		if (kv.first.get_type() == sol::type::string)
-// 		{
-// 			// Get table key as string.
-// 			string key = kv.first.as<string>();
-
-// 			// Handle value types
-// 			if (kv.second.get_type() == sol::type::string)
-// 			{
-// 				auto value = kv.second.as<string>();
-// 				table_transport_js_object.set(key, value);
-// 			}
-// 			else if (kv.second.get_type() == sol::type::number)
-// 			{
-// 				auto value = kv.second.as<double>();
-// 				table_transport_js_object.set(key, value);
-// 			}
-// 			else if (kv.second.get_type() == sol::type::boolean)
-// 			{
-// 				auto value = kv.second.as<bool>();
-// 				table_transport_js_object.set(key, value);
-// 			}
-// 			else if (kv.second.get_type() == sol::type::function)
-// 			{
-// 				// create a stub to be proxied in JavaScript
-// 				val blank_function = val::global("Function").new_();
-// 				table_transport_js_object.set(key, blank_function);
-// 			}
-// 			else if (kv.second.get_type() == sol::type::table)
-// 			{
-// 				auto value = kv.second.as<sol::table>();
-// 				table_transport_js_object.set(key, lua_table_to_js_obj(value));
-// 			}
-// 			else
-// 			{
-// 				table_transport_js_object.set(key, -1);
-// 			}
-// 		}
-
-// 		if (kv.first.get_type() == sol::type::number)
-// 		{
-// 			// Get table key as number.
-// 			lua_Number index = kv.first.as<lua_Number>();
-// 			// Handle value typess
-// 			if (kv.second.get_type() == sol::type::string)
-// 			{
-// 				auto value = kv.second.as<string>();
-// 				table_transport_js_object.set(index, value);
-// 			}
-// 			else if (kv.second.get_type() == sol::type::number)
-// 			{
-// 				auto value = kv.second.as<double>();
-// 				table_transport_js_object.set(index, value);
-// 			}
-// 			else if (kv.second.get_type() == sol::type::boolean)
-// 			{
-// 				auto value = kv.second.as<bool>();
-// 				table_transport_js_object.set(index, value);
-// 			}
-// 			else if (kv.second.get_type() == sol::type::function)
-// 			{
-// 				// create a stub to be proxied in JavaScript
-// 				val blank_function = val::global("Function").new_();
-// 				table_transport_js_object.set(index, blank_function);
-// 			}
-// 			else if (kv.second.get_type() == sol::type::table)
-// 			{
-// 				auto value = kv.second.as<sol::table>();
-// 				table_transport_js_object.set(index, lua_table_to_js_obj(value));
-// 			}
-// 			else
-// 			{
-// 				table_transport_js_object.set(index, -1);
-// 			}
-// 		}
-// 	}
-
-// 	return table_transport_js_object;
-// }
-
 // TODO: refactor to have resolving handlers inside module.lua
 /**
  * cpp require handler
+ * makes paths absolute depending on how we called require
  * @param string
 */
 auto require (string path_to_file, bool isMain = false)
@@ -131,7 +47,7 @@ auto require (string path_to_file, bool isMain = false)
 	string tidal_module_bootstrap = buffer.str();
 
 	// Bootstrap Tidal to Lua
-	// * Replaces require with a node.js clone
+	// * Replaces require with a node.js like module system and other usefull code
 	luaL_dostring(L, tidal_module_bootstrap.c_str());
 
 	const int last_index_of_ext_sep = path_to_file.find_last_of(EXT_SEP);
@@ -176,17 +92,26 @@ auto require (string path_to_file, bool isMain = false)
 	// never reached but removes error
 }
 
+int main(int argc, char *argv[])
+{
+	cout << argv[1] << endl;
+}
+
 // lua_run_file
 val lua_run_file (const string &path_to_file)
 {
 	luaL_openlibs(L);
 	// Bootstrap new require
 	lua.set_function("require", &require);
+	lua.set_function("printT", &print);
 
 	cout << path_to_file << endl;
 
-	auto compile_lua_module = lua.load("return require('"+ path_to_file +"', true);");
-	auto file_exports = compile_lua_module();
+	auto file_exports = lua.script("return require('"+ path_to_file +"', true);", [](lua_State*, sol::protected_function_result pfr) {
+		return pfr;
+	});
+
+	assert(file_exports.valid());
 
 	sol::table cast_return_value = (sol::table)file_exports;
 	val table_transport_js_object = lua_table_to_js_obj(cast_return_value);

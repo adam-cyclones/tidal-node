@@ -1,5 +1,5 @@
 // FFI Javascript to Lua function calls
-vector<std::variant<std::string, char, int, double, bool>> tmp_store_fn_args;
+std::vector<std::variant<std::string, char, int, double, bool>> tmp_store_fn_args;
 
 // FFI handle args in
 void push_fn_arg_int (int arg)
@@ -26,7 +26,10 @@ void push_fn_arg_bool (bool arg)
 {
 	tmp_store_fn_args.push_back(arg);
 }
-
+void clear_fn_args ()
+{
+	tmp_store_fn_args.clear();
+}
 
 emscripten::val lua_call_function (std::string path_to_file, std::string func_name)
 {
@@ -37,6 +40,7 @@ emscripten::val lua_call_function (std::string path_to_file, std::string func_na
 	for (const auto& js_value : tmp_store_fn_args)
 	{
 		std::visit([&](const auto &value) {
+			cout << value << " CPP" << index << endl;
 			index += 1;
 			lua_call_function_args_to_lua.set(index, value);
 		}, js_value);
@@ -44,11 +48,24 @@ emscripten::val lua_call_function (std::string path_to_file, std::string func_na
 
 
 	// Store a temp global in lua with the args from JavaScript
-	lua["lua_call_function_args"] = lua_call_function_args_to_lua;
+	lua["__lua_call_function_args"] = lua_call_function_args_to_lua;
 
-	auto call_fn = lua.load("return require.__cache['"+ path_to_file +"'].exports['"+ func_name +"'](table.unpack(lua_call_function_args))");
+	const auto& initiateLuaFnCallByLookup = R"(
+		local args = table.unpack(__lua_call_function_args);
+		return require.__cache[')" + path_to_file + "'].exports['" + func_name + "'](args)" + R"(
+	)";
 
+	auto call_fn = lua.load(initiateLuaFnCallByLookup);
+	// Handle errors to lookup the function
+	if (!call_fn.valid()) {
+		sol::error err = call_fn;
+		std::cerr << "failed to load string-based script in the program" << err.what() << std::endl;
+	}
 	auto lua_return_value = call_fn();
+	// Teardown
+	clear_fn_args();
+
+	// Handle returns
 	string lua_return_typename = luaL_typename(L, -1);
 	if (lua_return_typename == "string")
 	{

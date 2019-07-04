@@ -15,6 +15,7 @@ class LuaApi {
         ;(async ()=>{
             this.L = await new Promise(res => {
                 WASM_MODULE.onRuntimeInitialized = () => {
+                    WASM_MODULE.arguments.push(PROJECT_ROOT)
                     res(WASM_MODULE)
                 }
             })
@@ -57,7 +58,7 @@ class LuaApi {
                 });
                 fromLua[key] = new Proxy(fromLua[key], {
                     apply: (target, thisArg, argumentsList) => {
-                        // An object acting as an array
+                        // parse types
                         for (let arg of Array.from(argumentsList)) {
                             switch (typeof arg) {
                                 case "string":
@@ -100,14 +101,12 @@ class LuaApi {
                 })
             }
         }
-
         if (len === 1) {
             return fromLua[Object.keys(fromLua)[0]];
         }
         else if (len === 0) {
-            return null;
+            return {};
         }
-
         return fromLua;
     }
     /**
